@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detail Barang — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="home.html" class="flex items-center gap-2 font-bold text-lg text-blue-700">
+        <span class="text-2xl">🎒</span> Lost &amp; Found
+      </a>
+      <div id="areaAuth" class="flex items-center gap-3"></div>
+    </div>
+  </nav>
+
+  <!-- ================= KONTEN ================= -->
+  <main class="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+
+    <a href="home.html" class="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600 mb-4">
+      ← Kembali ke beranda
+    </a>
+
+    <!-- Tempat konten detail -->
+    <div id="kontenDetail"></div>
+
+  </main>
+
+  <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
+    © 2026 Lost &amp; Found Kampus
+  </footer>
+
+  <script>
+    // ===== 1. Ambil ID dari URL =====
+    const params = new URLSearchParams(location.search);
+    const idParam = params.get('id');
+
+    // ===== 2. Sumber data (sama seperti home) =====
+    const dataDummy = [
+      { id: 1, nama: 'Dompet Hitam',       kategori: 'Dompet',     status: 'ditemukan', lokasi: 'Kantin Fakultas Teknik', tanggal: '2026-10-20', emoji: '👛', deskripsi: 'Dompet kulit hitam berisi KTM dan uang tunai. Ditemukan di meja kantin.', pelapor: 'Sari' },
+      { id: 2, nama: 'AirPods Case',       kategori: 'Elektronik', status: 'hilang',    lokasi: 'Perpustakaan Lt. 2',      tanggal: '2026-10-19', emoji: '🎧', deskripsi: 'Case putih, ada stiker bintang. Hilang saat belajar di lantai 2.', pelapor: 'budi' },
+      { id: 3, nama: 'Tas Ransel Biru',    kategori: 'Tas',        status: 'ditemukan', lokasi: 'Gedung B, Ruang 201',     tanggal: '2026-10-18', emoji: '🎒', deskripsi: 'Tas ransel biru navy, ada laptop di dalamnya. Ditemukan setelah kelas.', pelapor: 'Rina' },
+      { id: 4, nama: 'Buku Kalkulus',      kategori: 'Buku',       status: 'hilang',    lokasi: 'Ruang Kuliah A3',         tanggal: '2026-10-17', emoji: '📕', deskripsi: 'Buku Kalkulus edisi 8, ada nama "Andi" di halaman pertama.', pelapor: 'Andi' },
+      { id: 5, nama: 'KTM atas nama Budi', kategori: 'Kartu',      status: 'ditemukan', lokasi: 'Parkiran Motor',          tanggal: '2026-10-16', emoji: '🪪', deskripsi: 'KTM atas nama Budi Santoso, NIM 2021xxx. Ditemukan di parkiran.', pelapor: 'Security' },
+      { id: 6, nama: 'Kunci Motor Honda',  kategori: 'Lainnya',    status: 'diklaim',   lokasi: 'Lobi Utama',              tanggal: '2026-10-15', emoji: '🔑', deskripsi: 'Kunci motor Honda dengan gantungan biru. Sudah diklaim pemilik.', pelapor: 'Resepsionis' },
+      { id: 7, nama: 'Powerbank Putih',    kategori: 'Elektronik', status: 'ditemukan', lokasi: 'Lab Komputer 2',          tanggal: '2026-10-14', emoji: '🔋', deskripsi: 'Powerbank putih 10000mAh, merk Robot. Ditemukan di meja lab.', pelapor: 'Tono' },
+      { id: 8, nama: 'Jaket Hoodie Abu',   kategori: 'Pakaian',    status: 'hilang',    lokasi: 'Kantin Lt. 1',            tanggal: '2026-10-13', emoji: '🧥', deskripsi: 'Hoodie abu-abu ukuran L, ada logo kampus. Tertinggal di kantin.', pelapor: 'Dewi' },
+    ];
+
+    const laporanUser = JSON.parse(localStorage.getItem('laporanUser') || '[]');
+    const semuaBarang = [...laporanUser, ...dataDummy];
+
+    // ===== 3. Cari barang berdasarkan ID =====
+    const barang = semuaBarang.find((b) => String(b.id) === String(idParam));
+
+    // ===== 4. Warna badge status =====
+    const warnaStatus = {
+      hilang:    'bg-red-100 text-red-700',
+      ditemukan: 'bg-green-100 text-green-700',
+      diklaim:   'bg-gray-200 text-gray-600',
+    };
+
+    // ===== 5. Navbar dinamis =====
+    function renderNavbar() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const area = document.getElementById('areaAuth');
+
+      if (token) {
+        area.innerHTML = `
+          <span class="hidden sm:inline text-sm text-gray-600">👤 ${user.nama || 'User'}</span>
+          <a href="dashboard.html"
+             class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            Dashboard
+          </a>
+          <button id="tombolLogout" class="text-sm text-red-600 hover:underline">Logout</button>
+        `;
+        document.getElementById('tombolLogout').addEventListener('click', () => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          renderNavbar();
+        });
+      } else {
+        area.innerHTML = `
+          <a href="login.html" class="text-sm text-gray-700 hover:text-blue-600 font-medium">Login</a>
+          <a href="register.html"
+             class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            Daftar
+          </a>
+        `;
+      }
+    }
+
+    // ===== 6. Render detail =====
+    const konten = document.getElementById('kontenDetail');
+
+    if (!barang) {
+      // Barang tidak ditemukan (404)
+      konten.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-sm p-10 text-center">
+          <div class="text-6xl mb-3">😕</div>
+          <h2 class="text-xl font-bold text-gray-800 mb-2">Barang tidak ditemukan</h2>
+          <p class="text-gray-500 mb-6">Mungkin barang sudah dihapus atau ID di URL salah.</p>
+          <a href="home.html" class="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700">
+            Kembali ke Beranda
+          </a>
+        </div>
+      `;
+    } else {
+      const visual = barang.foto
+        ? `<img src="${barang.foto}" class="w-full h-80 object-cover rounded-xl" alt="${barang.nama}" />`
+        : `<div class="w-full h-80 bg-gray-100 rounded-xl flex items-center justify-center text-9xl">${barang.emoji || '📦'}</div>`;
+
+      konten.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <!-- Kiri: Visual -->
+          <div>${visual}</div>
+
+          <!-- Kanan: Info -->
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <span class="text-xs px-3 py-1 rounded-full font-medium ${warnaStatus[barang.status]}">
+              ${barang.status.toUpperCase()}
+            </span>
+
+            <h1 class="text-2xl font-bold text-gray-800 mt-3">${barang.nama}</h1>
+
+            <div class="mt-5 space-y-3 text-sm">
+              <div class="flex items-start gap-2">
+                <span class="text-gray-400 w-5">🏷️</span>
+                <div>
+                  <p class="text-gray-400 text-xs">Kategori</p>
+                  <p class="text-gray-800 font-medium">${barang.kategori || '-'}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-gray-400 w-5">📍</span>
+                <div>
+                  <p class="text-gray-400 text-xs">Lokasi</p>
+                  <p class="text-gray-800 font-medium">${barang.lokasi || '-'}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-gray-400 w-5">📅</span>
+                <div>
+                  <p class="text-gray-400 text-xs">Tanggal</p>
+                  <p class="text-gray-800 font-medium">${barang.tanggal || '-'}</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-gray-400 w-5">👤</span>
+                <div>
+                  <p class="text-gray-400 text-xs">Pelapor</p>
+                  <p class="text-gray-800 font-medium">${barang.pelapor || 'Anonim'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-5 border-t">
+              <p class="text-gray-400 text-xs mb-1">Deskripsi</p>
+              <p class="text-gray-700 leading-relaxed">${barang.deskripsi || 'Tidak ada deskripsi.'}</p>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="mt-6 flex flex-col gap-2">
+              ${barang.status === 'diklaim'
+                ? `<button disabled class="w-full bg-gray-200 text-gray-500 py-2.5 rounded-lg font-medium cursor-not-allowed">
+                     ❌ Barang sudah diklaim
+                   </button>`
+                : `<button id="tombolKlaim"
+                     class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition">
+                     🤝 Klaim Barang Ini
+                   </button>`
+              }
+              <button id="tombolHubungi"
+                class="w-full bg-white border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition">
+                💬 Hubungi Pelapor
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // ===== 7. Event: tombol klaim =====
+      const tombolKlaim = document.getElementById('tombolKlaim');
+      if (tombolKlaim) {
+        tombolKlaim.addEventListener('click', () => {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            alert('Silakan login dulu untuk mengklaim barang.');
+            window.location.href = 'login.html';
+            return;
+          }
+
+          const yakin = confirm(`Klaim "${barang.nama}"?\n\nPastikan kamu adalah pemilik sah. Klaim palsu bisa dilaporkan.`);
+          if (!yakin) return;
+
+          // Simulasi klaim berhasil: ubah status jadi "diklaim" di localStorage
+          const laporanUser = JSON.parse(localStorage.getItem('laporanUser') || '[]');
+          const idx = laporanUser.findIndex((l) => String(l.id) === String(barang.id));
+          if (idx !== -1) {
+            laporanUser[idx].status = 'diklaim';
+            localStorage.setItem('laporanUser', JSON.stringify(laporanUser));
+          }
+
+          alert('✅ Klaim berhasil! Pelapor akan menghubungimu untuk verifikasi.');
+          location.reload();
+        });
+      }
+
+      // ===== 8. Event: tombol hubungi =====
+      document.getElementById('tombolHubungi').addEventListener('click', () => {
+        alert(`📞 Hubungi pelapor: ${barang.pelapor || 'Anonim'}\n\n(Dalam versi produksi, ini akan membuka chat/WhatsApp.)`);
+      });
+    }
+
+    // ===== 9. Jalankan =====
+    renderNavbar();
+  </script>
+</body>
+</html>

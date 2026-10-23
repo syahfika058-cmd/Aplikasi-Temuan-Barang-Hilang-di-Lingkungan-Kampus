@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+  <!-- NAVBAR ADMIN (Warna Hitam biar beda sama user biasa) -->
+  <nav class="bg-gray-900 text-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="home.html" class="flex items-center gap-2 font-bold text-lg text-white">
+        <span class="text-2xl">🛡️</span> Admin Panel
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="home.html" class="text-sm text-gray-300 hover:text-white">Kembali ke Publik</a>
+        <button id="tombolLogout" class="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+    <!-- Header -->
+    <div class="mb-6 flex justify-between items-end">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Kelola Laporan</h1>
+        <p class="text-gray-500 text-sm">Verifikasi dan perbarui status laporan barang.</p>
+      </div>
+      <button id="btnResetData" class="text-sm bg-yellow-500 text-white px-4 py-2 rounded shadow hover:bg-yellow-600">
+        ⚠️ Reset ke Data Dummy
+      </button>
+    </div>
+
+    <!-- Tabel Data -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+              <th class="p-4 font-medium">ID</th>
+              <th class="p-4 font-medium">Nama Barang</th>
+              <th class="p-4 font-medium">Tipe</th>
+              <th class="p-4 font-medium">Pelapor</th>
+              <th class="p-4 font-medium">Status Saat Ini</th>
+              <th class="p-4 font-medium text-center">Aksi (Ubah Status)</th>
+              <th class="p-4 font-medium text-center">Hapus</th>
+            </tr>
+          </thead>
+          <tbody id="tabelAdmin" class="text-sm divide-y divide-gray-100">
+            <!-- Diisi via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+       const cekUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!localStorage.getItem('token') || cekUser.role !== 'admin') {
+      alert('Akses Ditolak! Halaman ini hanya untuk Admin.');
+      window.location.href = 'home.html'; // Tendang ke beranda
+    }
+
+    // Data Dummy Awal
+    const dataDummy = [
+      { id: 1, nama: 'Dompet Hitam',       kategori: 'Dompet',     status: 'ditemukan', lokasi: 'Kantin Fakultas Teknik', tanggal: '2026-10-20', pelapor: 'Sari' },
+      { id: 2, nama: 'AirPods Case',       kategori: 'Elektronik', status: 'hilang',    lokasi: 'Perpustakaan Lt. 2',      tanggal: '2026-10-19', pelapor: 'budi' },
+      { id: 3, nama: 'Tas Ransel Biru',    kategori: 'Tas',        status: 'ditemukan', lokasi: 'Gedung B, Ruang 201',     tanggal: '2026-10-18', pelapor: 'Rina' },
+      { id: 4, nama: 'Buku Kalkulus',      kategori: 'Buku',       status: 'hilang',    lokasi: 'Ruang Kuliah A3',         tanggal: '2026-10-17', pelapor: 'Andi' },
+      { id: 5, nama: 'KTM atas nama Budi', kategori: 'Kartu',      status: 'ditemukan', lokasi: 'Parkiran Motor',          tanggal: '2026-10-16', pelapor: 'Security' },
+    ];
+
+    let laporanUser = JSON.parse(localStorage.getItem('laporanUser') || '[]');
+    let semuaLaporan = [...laporanUser, ...dataDummy];
+
+    // Warna Status
+    const warnaStatus = {
+      'Aktif':        'bg-blue-100 text-blue-700',
+      'Cocok':        'bg-yellow-100 text-yellow-700',
+      'Dikembalikan': 'bg-green-100 text-green-700',
+      'Ditutup':      'bg-gray-200 text-gray-600',
+      'hilang':       'bg-red-100 text-red-700',     
+      'ditemukan':    'bg-green-100 text-green-700', 
+      'diklaim':      'bg-gray-200 text-gray-600'    
+    };
+
+    // Render Tabel
+    function renderTabel() {
+      const tbody = document.getElementById('tabelAdmin');
+      
+      if (semuaLaporan.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-500">Belum ada data laporan.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = semuaLaporan.map((b) => `
+        <tr class="hover:bg-gray-50">
+          <td class="p-4 text-gray-500">#${b.id}</td>
+          <td class="p-4 font-medium text-gray-800">${b.nama}</td>
+          <td class="p-4 capitalize">${b.tipe || b.status}</td> 
+          <td class="p-4">${b.pelapor || 'Anonim'}</td>
+          <td class="p-4">
+            <span class="px-2 py-1 rounded text-xs font-semibold ${warnaStatus[b.status] || 'bg-gray-100'}">
+              ${b.status ? b.status.toUpperCase() : '-'}
+            </span>
+          </td>
+          <td class="p-4 text-center">
+            <select onchange="ubahStatus('${b.id}', this.value)" class="border rounded p-1 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300">
+              <option value="" disabled selected>Ubah...</option>
+              <option value="Aktif">Aktif</option>
+              <option value="Cocok">Cocok</option>
+              <option value="Dikembalikan">Dikembalikan</option>
+              <option value="Ditutup">Ditutup</option>
+            </select>
+          </td>
+          <td class="p-4 text-center">
+            <button onclick="hapusLaporan('${b.id}')" class="text-red-500 hover:text-red-700 font-medium text-xs">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Fungsi Ubah Status
+    window.ubahStatus = function(id, statusBaru) {
+      let indexUser = laporanUser.findIndex(l => String(l.id) === String(id));
+      if (indexUser !== -1) {
+        laporanUser[indexUser].status = statusBaru;
+        localStorage.setItem('laporanUser', JSON.stringify(laporanUser));
+      } else {
+        let overrideStatus = JSON.parse(localStorage.getItem('overrideStatus') || '{}');
+        overrideStatus[id] = statusBaru;
+        localStorage.setItem('overrideStatus', JSON.stringify(overrideStatus));
+      }
+      
+      alert(`✅ Status laporan #${id} berhasil diubah menjadi "${statusBaru}".`);
+      loadData();
+    }
+
+    // Fungsi Hapus
+    window.hapusLaporan = function(id) {
+      const yakin = confirm(`Yakin ingin menghapus laporan #${id}? Data tidak bisa dikembalikan.`);
+      if (!yakin) return;
+
+      laporanUser = laporanUser.filter(l => String(l.id) !== String(id));
+      localStorage.setItem('laporanUser', JSON.stringify(laporanUser));
+
+      let dummyTerhapus = JSON.parse(localStorage.getItem('dummyTerhapus') || '[]');
+      if (!dummyTerhapus.includes(String(id))) dummyTerhapus.push(String(id));
+      localStorage.setItem('dummyTerhapus', JSON.stringify(dummyTerhapus));
+
+      alert('🗑️ Laporan berhasil dihapus.');
+      loadData();
+    }
+
+    // Load Data
+    function loadData() {
+      laporanUser = JSON.parse(localStorage.getItem('laporanUser') || '[]');
+      const overrideStatus = JSON.parse(localStorage.getItem('overrideStatus') || '{}');
+      const dummyTerhapus = JSON.parse(localStorage.getItem('dummyTerhapus') || '[]');
+
+      const dummyAktif = dataDummy.filter(d => !dummyTerhapus.includes(String(d.id)));
+
+      const dummyDenganStatus = dummyAktif.map(d => {
+        if (overrideStatus[d.id]) {
+          return { ...d, status: overrideStatus[d.id] };
+        }
+        return d;
+      });
+
+      semuaLaporan = [...laporanUser, ...dummyDenganStatus];
+      renderTabel();
+    }
+
+    // Reset Data
+    document.getElementById('btnResetData').addEventListener('click', () => {
+      if (confirm('Reset semua data laporan ke kondisi awal?')) {
+        localStorage.removeItem('laporanUser');
+        localStorage.removeItem('overrideStatus');
+        localStorage.removeItem('dummyTerhapus');
+        alert('Data berhasil di-reset!');
+        loadData();
+      }
+    });
+
+    // Logout
+    document.getElementById('tombolLogout').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    });
+
+    // Jalankan
+    loadData();
+  </script>
+</body>
+</html>
