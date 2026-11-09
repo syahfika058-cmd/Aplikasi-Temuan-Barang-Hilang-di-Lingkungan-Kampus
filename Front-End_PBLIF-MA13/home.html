@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beranda — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="home.html" class="flex items-center gap-2 font-bold text-lg text-blue-700">
+        <span class="text-2xl">🎒</span> Lost &amp; Found
+      </a>
+
+      <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+        <a href="home.html" class="text-blue-600">Home</a>
+      </div>
+
+      <!-- Area auth: diisi lewat JS -->
+      <div id="areaAuth" class="flex items-center gap-3"></div>
+    </div>
+  </nav>
+
+  <!-- ================= HERO + SEARCH ================= -->
+  <section class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+    <div class="max-w-4xl mx-auto px-4 py-12 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-3">Temukan Barangmu yang Hilang 🔍</h1>
+      <p class="text-blue-100 mb-6">
+        Laporkan barang hilang atau temuan di lingkungan kampus. Cepat, gratis, dan aman.
+      </p>
+
+      <div class="max-w-lg mx-auto flex gap-2">
+        <input type="text" id="inputCari" placeholder="Cari nama barang, lokasi..."
+          class="flex-1 px-4 py-3 rounded-lg text-gray-800 outline-none focus:ring-2 focus:ring-blue-300" />
+        <button id="tombolCari"
+          class="bg-white text-blue-700 px-6 rounded-lg font-medium hover:bg-blue-50">Cari</button>
+      </div>
+
+      <div class="mt-6 flex justify-center gap-3 flex-wrap">
+        <a href="lapor.html?tipe=hilang"
+           class="tombol-lapor bg-red-500 hover:bg-red-600 px-5 py-2.5 rounded-lg font-medium transition">
+          + Lapor Hilang
+        </a>
+        <a href="lapor.html?tipe=ditemukan"
+           class="tombol-lapor bg-green-500 hover:bg-green-600 px-5 py-2.5 rounded-lg font-medium transition">
+          + Lapor Temuan
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIST BARANG ================= -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <h2 class="text-xl font-bold text-gray-800">📋 Barang Terbaru</h2>
+
+      <div class="flex gap-1 bg-white rounded-lg p-1 shadow-sm text-sm">
+        <button class="tab-filter px-3 py-1.5 rounded-md bg-blue-600 text-white" data-filter="semua">Semua</button>
+        <button class="tab-filter px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100" data-filter="hilang">Aktif</button>
+        <button class="tab-filter px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100" data-filter="ditemukan">Ditemukan</button>
+        <button class="tab-filter px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100" data-filter="diklaim">Dikembalikan</button>
+        <button class="tab-filter px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100" data-filter="diklaim">Ditutup</button>
+      </div>
+    </div>
+
+    <div id="gridBarang" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+
+    <div id="pesanKosong" class="hidden text-center text-gray-500 py-16">
+      😕 Tidak ada barang yang cocok dengan pencarian/filter.
+    </div>
+  </main>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
+    © 2026 Lost &amp; Found Kampus
+  </footer>
+
+  <script>
+    // ===== 1. Data dummy =====
+    const dataBarang = [
+      { id: 1, nama: 'Dompet Hitam',       kategori: 'Dompet',     status: 'ditemukan', lokasi: 'Kantin',               tanggal: '2026-10-20', emoji: '👛' },
+      { id: 2, nama: 'AirPods Case',       kategori: 'Elektronik', status: 'hilang',    lokasi: 'Perpustakaan',         tanggal: '2026-10-19', emoji: '🎧' },
+      { id: 3, nama: 'Tas Ransel Biru',    kategori: 'Tas',        status: 'ditemukan', lokasi: 'Gedung B, Ruang 201',  tanggal: '2026-10-18', emoji: '🎒' },
+      { id: 4, nama: 'Buku Kalkulus',      kategori: 'Buku',       status: 'hilang',    lokasi: 'Ruang Kuliah A3',      tanggal: '2026-10-17', emoji: '📕' },
+      { id: 5, nama: 'KTM atas nama Budi', kategori: 'Kartu',      status: 'ditemukan', lokasi: 'Parkiran Motor',       tanggal: '2026-10-16', emoji: '🪪' },
+      { id: 6, nama: 'Kunci Motor Honda',  kategori: 'Lainnya',    status: 'diklaim',   lokasi: 'Lobi Utama',           tanggal: '2026-10-15', emoji: '🔑' },
+      { id: 7, nama: 'Powerbank Putih',    kategori: 'Elektronik', status: 'ditemukan', lokasi: 'Lab Komputer 2',       tanggal: '2026-10-14', emoji: '🔋' },
+      { id: 8, nama: 'Jaket Hoodie Abu',   kategori: 'Pakaian',    status: 'hilang',    lokasi: 'Kantin',               tanggal: '2026-10-13', emoji: '🧥' },
+    ];
+
+    let filterAktif = 'semua';
+    let kataKunci = '';
+
+    const warnaStatus = {
+      hilang:    'bg-red-100 text-red-700',
+      ditemukan: 'bg-green-100 text-green-700',
+      diklaim:   'bg-gray-200 text-gray-600',
+    };
+
+    // ===== 2. Navbar dinamis =====
+    function renderNavbar() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const area = document.getElementById('areaAuth');
+
+      if (token) {
+        area.innerHTML = `
+          <span class="hidden sm:inline text-sm text-gray-600">👤 ${user.nama || 'User'}</span>
+          <a href="dashboard.html"
+             class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            Dashboard
+          </a>
+          <button id="tombolLogout" class="text-sm text-red-600 hover:underline">Logout</button>
+        `;
+        document.getElementById('tombolLogout').addEventListener('click', () => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          renderNavbar();
+        });
+      } else {
+        area.innerHTML = `
+          <a href="login.html" class="text-sm text-gray-700 hover:text-blue-600 font-medium">Login</a>
+          <a href="register.html"
+             class="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition">
+            Daftar
+          </a>
+        `;
+      }
+    }
+
+    // ===== 3. Render barang =====
+    function renderBarang() {
+      const grid = document.getElementById('gridBarang');
+      const pesanKosong = document.getElementById('pesanKosong');
+
+      const hasil = dataBarang.filter((b) => {
+        const cocokFilter = filterAktif === 'semua' || b.status === filterAktif;
+        const cocokCari =
+          b.nama.toLowerCase().includes(kataKunci.toLowerCase()) ||
+          b.lokasi.toLowerCase().includes(kataKunci.toLowerCase());
+        return cocokFilter && cocokCari;
+      });
+
+      if (hasil.length === 0) {
+        grid.innerHTML = '';
+        pesanKosong.classList.remove('hidden');
+        return;
+      }
+      pesanKosong.classList.add('hidden');
+
+      grid.innerHTML = hasil.map((b) => `
+        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden cursor-pointer"
+             onclick="window.location.href='detail.html?id=${b.id}'">
+          <div class="h-40 bg-gray-100 flex items-center justify-center text-6xl">${b.emoji}</div>
+          <div class="p-4">
+            <span class="text-xs px-2 py-1 rounded ${warnaStatus[b.status]}">${b.status.toUpperCase()}</span>
+            <h3 class="font-semibold text-gray-800 mt-2">${b.nama}</h3>
+            <p class="text-sm text-gray-500">📍 ${b.lokasi}</p>
+            <p class="text-sm text-gray-500">📅 ${b.tanggal}</p>
+            <p class="text-sm text-gray-500">🏷️ ${b.kategori}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== 4. Event search =====
+    document.getElementById('inputCari').addEventListener('input', (e) => {
+      kataKunci = e.target.value;
+      renderBarang();
+    });
+    document.getElementById('tombolCari').addEventListener('click', () => {
+      kataKunci = document.getElementById('inputCari').value;
+      renderBarang();
+    });
+
+    // ===== 5. Event filter tab =====
+    document.querySelectorAll('.tab-filter').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-filter').forEach((b) => {
+          b.className = 'tab-filter px-3 py-1.5 rounded-md text-gray-600 hover:bg-gray-100';
+        });
+        btn.className = 'tab-filter px-3 py-1.5 rounded-md bg-blue-600 text-white';
+        filterAktif = btn.dataset.filter;
+        renderBarang();
+      });
+    });
+
+    // ===== 6. Proteksi tombol lapor (harus login) =====
+    document.querySelectorAll('.tombol-lapor').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        if (!localStorage.getItem('token')) {
+          e.preventDefault();
+          alert('Silakan login dulu untuk melapor.');
+          window.location.href = 'login.html';
+        }
+      });
+    });
+
+    // ===== 7. Jalankan =====
+    renderNavbar();
+    renderBarang();
+  </script>
+</body>
+</html>

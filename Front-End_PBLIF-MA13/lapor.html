@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lapor Barang — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- ================= NAVBAR ================= -->
+  <nav class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="home.html" class="flex items-center gap-2 font-bold text-lg text-blue-700">
+        <span class="text-2xl">🎒</span> Lost &amp; Found
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="home.html" class="text-sm text-gray-600 hover:text-blue-600">Home</a>
+        <a href="dashboard.html" class="text-sm text-gray-600 hover:text-blue-600">Dashboard</a>
+        <span id="userNama" class="hidden sm:inline text-sm text-gray-600"></span>
+        <button id="tombolLogout" class="text-sm text-red-600 hover:underline">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= FORM ================= -->
+  <main class="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-1">📝 Lapor Barang</h1>
+      <p class="text-gray-500 text-sm">Isi data barang yang hilang atau kamu temukan</p>
+    </div>
+
+    <form id="formLapor" novalidate class="bg-white rounded-2xl shadow-sm p-6 md:p-8 space-y-5">
+
+      <!-- Pilih Tipe -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Saya ingin melaporkan *</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" data-tipe="hilang"
+            class="tipe-btn px-4 py-3 rounded-lg border-2 border-gray-200 text-gray-600 font-medium hover:border-red-300 transition">
+            🔴 Saya Kehilangan
+          </button>
+          <button type="button" data-tipe="ditemukan"
+            class="tipe-btn px-4 py-3 rounded-lg border-2 border-gray-200 text-gray-600 font-medium hover:border-green-300 transition">
+            🟢 Saya Menemukan
+          </button>
+        </div>
+        <p id="errorTipe" class="text-red-500 text-xs mt-1 hidden"></p>
+      </div>
+
+      <!-- Nama -->
+      <div>
+        <label for="nama" class="block text-sm font-medium text-gray-700 mb-1">Nama Barang *</label>
+        <input type="text" id="nama" placeholder="Contoh: Dompet hitam, AirPods, Jaket..."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+        <p id="errorNama" class="text-red-500 text-xs mt-1 hidden"></p>
+      </div>
+
+      <!-- Kategori -->
+      <div>
+        <label for="kategori" class="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+        <select id="kategori"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300 bg-white">
+          <option value="">-- Pilih kategori --</option>
+          <option value="Elektronik">Elektronik</option>
+          <option value="Dompet">Dompet / Kartu</option>
+          <option value="Tas">Tas / Ransel</option>
+          <option value="Buku">Buku / Alat Tulis</option>
+          <option value="Pakaian">Pakaian</option>
+          <option value="Kartu">KTM / KTP / Kartu</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+        <p id="errorKategori" class="text-red-500 text-xs mt-1 hidden"></p>
+      </div>
+
+      <!-- Lokasi & Tanggal -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="lokasi" class="block text-sm font-medium text-gray-700 mb-1">Lokasi *</label>
+          <input type="text" id="lokasi" placeholder="Contoh: Gedung A"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+          <p id="errorLokasi" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+        <div>
+          <label for="tanggal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal *</label>
+          <input type="date" id="tanggal"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+          <p id="errorTanggal" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+      </div>
+
+      <!-- Kontak (BARU) -->
+      <div>
+        <label for="kontak" class="block text-sm font-medium text-gray-700 mb-1">Kontak (WA/Email) *</label>
+        <input type="text" id="kontak" placeholder="Contoh: 08123456789 atau nama@example.com"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+        <p id="errorKontak" class="text-red-500 text-xs mt-1 hidden"></p>
+      </div>
+
+      <!-- Deskripsi -->
+      <div>
+        <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-1">Deskripsi / Ciri-ciri *</label>
+        <textarea id="deskripsi" rows="4"
+          placeholder="Jelaskan ciri-ciri barang: warna, merk, isi, dll."
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300 resize-none"></textarea>
+        <p id="errorDeskripsi" class="text-red-500 text-xs mt-1 hidden"></p>
+      </div>
+
+      <!-- Upload Foto -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Foto Barang <span class="text-gray-400">(opsional)</span></label>
+        <input type="file" id="foto" accept="image/*" class="hidden" />
+        <label for="foto"
+          class="cursor-pointer flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-6 hover:border-blue-400 transition">
+          <span class="text-3xl mb-1">📷</span>
+          <span class="text-sm text-gray-500">Klik untuk pilih foto</span>
+        </label>
+        <div id="previewFoto" class="hidden mt-3 relative">
+          <img id="imgPreview" class="w-full max-h-60 object-contain rounded-lg border" />
+          <button type="button" id="hapusFoto"
+            class="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded hover:bg-red-600">
+            ✕ Hapus
+          </button>
+        </div>
+      </div>
+
+      <!-- Tombol -->
+      <div class="flex gap-3 pt-2">
+        <a href="home.html"
+          class="flex-1 text-center bg-gray-100 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-200 transition">
+          Batal
+        </a>
+        <button type="submit" id="tombolKirim"
+          class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-60">
+          Kirim Laporan
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
+    © 2026 Lost &amp; Found Kampus
+  </footer>
+
+  <script>
+    // ===== 1. Proteksi: wajib login =====
+    if (!localStorage.getItem('token')) {
+      window.location.href = 'login.html';
+    }
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('userNama').textContent = user.nama ? `👤 ${user.nama}` : '';
+
+    // ===== 2. Ambil tipe dari URL (?tipe=hilang / ?tipe=ditemukan) =====
+    let tipeTerpilih = '';
+    const params = new URLSearchParams(location.search);
+    const tipeUrl = params.get('tipe');
+
+    // ===== 3. State elemen =====
+    const formLapor = document.getElementById('formLapor');
+    const nama = document.getElementById('nama');
+    const kategori = document.getElementById('kategori');
+    const lokasi = document.getElementById('lokasi');
+    const tanggal = document.getElementById('tanggal');
+    const kontak = document.getElementById('kontak');
+    const deskripsi = document.getElementById('deskripsi');
+    const foto = document.getElementById('foto');
+    const imgPreview = document.getElementById('imgPreview');
+    const previewFoto = document.getElementById('previewFoto');
+    const tombolKirim = document.getElementById('tombolKirim');
+
+    tanggal.value = new Date().toISOString().split('T')[0];
+
+    // ===== 4. Pilih tipe (toggle) =====
+    function pilihTipe(tipe) {
+      tipeTerpilih = tipe;
+      document.querySelectorAll('.tipe-btn').forEach((btn) => {
+        const isActive = btn.dataset.tipe === tipe;
+        if (isActive) {
+          btn.className = `tipe-btn px-4 py-3 rounded-lg border-2 font-medium transition
+            ${tipe === 'hilang'
+              ? 'border-red-500 bg-red-50 text-red-700'
+              : 'border-green-500 bg-green-50 text-green-700'}`;
+        } else {
+          btn.className = 'tipe-btn px-4 py-3 rounded-lg border-2 border-gray-200 text-gray-600 font-medium hover:border-gray-300 transition';
+        }
+      });
+      document.getElementById('errorTipe').classList.add('hidden');
+    }
+
+    document.querySelectorAll('.tipe-btn').forEach((btn) => {
+      btn.addEventListener('click', () => pilihTipe(btn.dataset.tipe));
+    });
+
+    if (tipeUrl === 'hilang' || tipeUrl === 'ditemukan') {
+      pilihTipe(tipeUrl);
+    }
+
+    // ===== 5. Preview foto =====
+    foto.addEventListener('change', () => {
+      const file = foto.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imgPreview.src = e.target.result;
+        previewFoto.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('hapusFoto').addEventListener('click', () => {
+      foto.value = '';
+      previewFoto.classList.add('hidden');
+      imgPreview.src = '';
+    });
+
+    // ===== 6. Validasi & submit =====
+    formLapor.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      // Sembunyikan semua error dulu
+      ['errorTipe', 'errorNama', 'errorKategori', 'errorLokasi', 'errorTanggal', 'errorKontak', 'errorDeskripsi']
+        .forEach((id) => document.getElementById(id).classList.add('hidden'));
+
+      let valid = true;
+
+      if (!tipeTerpilih) {
+        document.getElementById('errorTipe').textContent = 'Pilih tipe laporan dulu';
+        document.getElementById('errorTipe').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!nama.value.trim()) {
+        document.getElementById('errorNama').textContent = 'Nama barang wajib diisi';
+        document.getElementById('errorNama').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!kategori.value) {
+        document.getElementById('errorKategori').textContent = 'Pilih kategori';
+        document.getElementById('errorKategori').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!lokasi.value.trim()) {
+        document.getElementById('errorLokasi').textContent = 'Lokasi wajib diisi';
+        document.getElementById('errorLokasi').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!tanggal.value) {
+        document.getElementById('errorTanggal').textContent = 'Tanggal wajib diisi';
+        document.getElementById('errorTanggal').classList.remove('hidden');
+        valid = false;
+      }
+
+      // Validasi Kontak (BARU)
+      if (!kontak.value.trim()) {
+        document.getElementById('errorKontak').textContent = 'Kontak wajib diisi';
+        document.getElementById('errorKontak').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!deskripsi.value.trim()) {
+        document.getElementById('errorDeskripsi').textContent = 'Deskripsi wajib diisi';
+        document.getElementById('errorDeskripsi').classList.remove('hidden');
+        valid = false;
+      } else if (deskripsi.value.trim().length < 10) {
+        document.getElementById('errorDeskripsi').textContent = 'Deskripsi minimal 10 karakter';
+        document.getElementById('errorDeskripsi').classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      // ===== Simpan ke localStorage (mock) =====
+      tombolKirim.textContent = 'Mengirim...';
+      tombolKirim.disabled = true;
+
+      setTimeout(() => {
+        const simpanLaporan = (fotoData) => {
+          const laporanBaru = {
+            id: Date.now(),
+            nama: nama.value.trim(),
+            kategori: kategori.value,
+            status: tipeTerpilih,
+            lokasi: lokasi.value.trim(),
+            tanggal: tanggal.value,
+            kontak: kontak.value.trim(), // Kontak tersimpan
+            deskripsi: deskripsi.value.trim(),
+            foto: fotoData || null,
+            pelapor: user.nama || 'Anonim',
+            dibuatPada: new Date().toISOString(),
+          };
+
+          const semuaLaporan = JSON.parse(localStorage.getItem('laporanUser') || '[]');
+          semuaLaporan.unshift(laporanBaru);
+          localStorage.setItem('laporanUser', JSON.stringify(semuaLaporan));
+
+          alert('✅ Laporan berhasil dikirim!');
+          window.location.href = 'home.html';
+        };
+
+        if (foto.files[0]) {
+          const reader = new FileReader();
+          reader.onload = (e) => simpanLaporan(e.target.result);
+          reader.readAsDataURL(foto.files[0]);
+        } else {
+          simpanLaporan(null);
+        }
+      }, 600);
+    });
+
+    // ===== 7. Logout =====
+    document.getElementById('tombolLogout').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'home.html';
+    });
+  </script>
+</body>
+</html>

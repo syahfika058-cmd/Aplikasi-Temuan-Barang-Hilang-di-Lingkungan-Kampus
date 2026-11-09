@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+
+  <div class="bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row">
+
+    <!-- Panel Kiri: Ilustrasi -->
+    <div class="hidden md:flex md:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 p-10 flex-col justify-center text-white">
+      <div class="text-5xl mb-4">🎒</div>
+      <h1 class="text-3xl font-bold mb-3">Lost &amp; Found</h1>
+      <p class="text-blue-100 leading-relaxed">
+        Kehilangan barang di kampus? Laporkan di sini dan bantu temanmu menemukan barangnya kembali.
+      </p>
+      <ul class="mt-6 space-y-2 text-sm text-blue-100">
+        <li>✅ Lapor barang hilang</li>
+        <li>✅ Lapor barang ditemukan</li>
+        <li>✅ Klaim barang dengan aman</li>
+      </ul>
+    </div>
+
+    <!-- Panel Kanan: Form -->
+    <div class="w-full md:w-1/2 p-8 md:p-10">
+      <h2 class="text-2xl font-bold text-gray-800 mb-1">Selamat Datang 👋</h2>
+      <p class="text-gray-500 text-sm mb-6">Login untuk mulai melapor &amp; klaim barang</p>
+
+      <!-- Info demo -->
+      <div class="bg-blue-50 border border-blue-200 text-blue-700 text-xs p-3 rounded-lg mb-4">
+        💡 <strong>Mode Demo:</strong> Masukkan email apa saja yang mengandung <code>@</code> dan password minimal 6 karakter. Tidak perlu daftar dulu.
+      </div>
+
+      <div id="pesanError" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm p-3 rounded-lg mb-4"></div>
+
+      <form id="formLogin" novalidate class="space-y-4">
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input type="email" id="email" placeholder="nama@example.com"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+          <p id="errorEmail" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div class="relative">
+            <input type="password" id="password" placeholder="Minimal 6 karakter"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-300" />
+            <button type="button" id="togglePassword"
+              class="absolute right-3 top-2 text-gray-500 hover:text-gray-700" tabindex="-1"></button>
+          </div>
+          <p id="errorPassword" class="text-red-500 text-xs mt-1 hidden"></p>
+        </div>
+
+        <button type="submit" id="tombolLogin"
+          class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 active:bg-blue-800 transition disabled:opacity-60">
+          Login
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-gray-600 mt-6">
+        Belum punya akun? <a href="register.html" class="text-blue-600 font-medium hover:underline">Daftar di sini</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const formLogin = document.getElementById('formLogin');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const errorEmail = document.getElementById('errorEmail');
+    const errorPassword = document.getElementById('errorPassword');
+    const pesanError = document.getElementById('pesanError');
+    const tombolLogin = document.getElementById('tombolLogin');
+
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      password.type = password.type === 'password' ? 'text' : 'password';
+    });
+
+    formLogin.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      errorEmail.classList.add('hidden');
+      errorPassword.classList.add('hidden');
+      pesanError.classList.add('hidden');
+
+      let valid = true;
+
+      if (!email.value) {
+        errorEmail.textContent = 'Email wajib diisi';
+        errorEmail.classList.remove('hidden');
+        valid = false;
+      } else if (!email.value.includes('@')) {
+        errorEmail.textContent = 'Email harus mengandung @';
+        errorEmail.classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!password.value) {
+        errorPassword.textContent = 'Password wajib diisi';
+        errorPassword.classList.remove('hidden');
+        valid = false;
+      } else if (password.value.length < 6) {
+        errorPassword.textContent = 'Password minimal 6 karakter';
+        errorPassword.classList.remove('hidden');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      tombolLogin.textContent = 'Memproses...';
+      tombolLogin.disabled = true;
+
+      setTimeout(() => {
+        const emailInput = email.value.trim();
+        
+        // Cek apakah email ini pernah didaftarkan lewat register.html
+        const daftarAkun = JSON.parse(localStorage.getItem('akunKampus') || '[]');
+        const akunTerdaftar = daftarAkun.find((a) => a.email === emailInput);
+
+        let namaUser = '';
+        
+        if (akunTerdaftar) {
+          // Kalau terdaftar, pakai nama asli dari form daftar
+          namaUser = akunTerdaftar.nama;
+        } else {
+          // Kalau akun demo (ngasal), pakai potongan email
+          namaUser = emailInput.split('@')[0];
+        }
+
+        localStorage.setItem('token', 'dummy-token');
+        localStorage.setItem('user', JSON.stringify({
+          nama: namaUser || 'User',
+          email: emailInput,
+        }));
+
+        window.location.href = 'dashboard.html';
+
+              // ... (kode sebelumnya biarkan) ...
+
+        // Tentukan role berdasarkan email
+        let roleUser = (emailInput === 'admin@kampus.ac.id') ? 'admin' : 'user';
+
+        localStorage.setItem('token', 'dummy-token');
+        localStorage.setItem('user', JSON.stringify({
+          nama: namaUser || 'User',
+          email: emailInput,
+          role: roleUser // <--- TAMBAHKAN INI
+        }));
+
+        window.location.href = 'dashboard.html';
+      }, 600);
+    });
+  </script>
+</body>
+</html>

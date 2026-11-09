@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Lost & Found Kampus</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- NAVBAR -->
+  <nav class="bg-white shadow-sm sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="home.html" class="flex items-center gap-2 font-bold text-lg text-blue-700">
+        <span class="text-2xl">🎒</span> Lost &amp; Found
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="home.html" class="text-sm text-gray-600 hover:text-blue-600">Home</a>
+        <span id="userNama" class="hidden sm:inline text-sm text-gray-600"></span>
+        <button id="tombolLogout" class="text-sm text-red-600 hover:underline">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ISI DASHBOARD -->
+  <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">Dashboard 📊</h1>
+    <p class="text-gray-500 mb-6">Ringkasan laporan &amp; aktivitasmu</p>
+
+    <!-- Statistik -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <p class="text-sm text-gray-500">Laporan Hilang</p>
+        <p class="text-3xl font-bold text-red-600" id="statHilang">0</p>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <p class="text-sm text-gray-500">Laporan Temuan</p>
+        <p class="text-3xl font-bold text-green-600" id="statTemuan">0</p>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <p class="text-sm text-gray-500">Sudah Diklaim</p>
+        <p class="text-3xl font-bold text-gray-600" id="statKlaim">0</p>
+      </div>
+      <div class="bg-white rounded-xl p-5 shadow-sm">
+        <p class="text-sm text-gray-500">Total</p>
+        <p class="text-3xl font-bold text-blue-600" id="statTotal">0</p>
+      </div>
+    </div>
+
+    <!-- Aksi cepat -->
+    <div class="flex gap-3 mb-8 flex-wrap">
+      <!-- Tombol Lapor -->
+      <a href="lapor.html?tipe=hilang"
+         class="bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-lg font-medium">
+        + Lapor Hilang
+      </a>
+      <a href="lapor.html?tipe=ditemukan"
+         class="bg-green-500 hover:bg-green-600 text-white px-5 py-2.5 rounded-lg font-medium">
+        + Lapor Temuan
+      </a>
+      
+      <!-- Tombol Publik -->
+      <a href="home.html"
+         class="bg-white border text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:bg-gray-50">
+        Lihat Semua Barang
+      </a>
+
+      <!-- TOMBOL ADMIN (Sembunyikan secara default) -->
+      <a href="admin.html" id="tombolAdmin"
+         class="hidden bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-lg font-medium shadow-md">
+        🛡️ Masuk sebagai Admin
+      </a>
+    </div>
+
+    <!-- Laporan saya -->
+    <h2 class="text-lg font-bold text-gray-800 mb-3">📋 Laporan Saya</h2>
+    <div id="listLaporan" class="space-y-3"></div>
+  </main>
+
+  <footer class="bg-white border-t text-center text-sm text-gray-500 py-4">
+    © 2026 Lost &amp; Found Kampus
+  </footer>
+
+  <script>
+    // ===== 1. Proteksi: wajib login =====
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    document.getElementById('userNama').textContent = user.nama ? `👤 ${user.nama}` : '';
+
+    // ===== 2. Data laporan dummy =====
+    const laporanSaya = [
+      { id: 2, nama: 'AirPods Case',     status: 'hilang',    lokasi: 'Perpustakaan Lt. 2', tanggal: '2026-10-19' },
+      { id: 8, nama: 'Jaket Hoodie Abu', status: 'hilang',    lokasi: 'Kantin Lt. 1',       tanggal: '2026-10-13' },
+      { id: 6, nama: 'Kunci Motor Honda', status: 'diklaim',  lokasi: 'Lobi Utama',         tanggal: '2026-10-15' },
+    ];
+
+    // ===== 3. Statistik =====
+    document.getElementById('statHilang').textContent = laporanSaya.filter((l) => l.status === 'hilang').length;
+    document.getElementById('statTemuan').textContent = laporanSaya.filter((l) => l.status === 'ditemukan').length;
+    document.getElementById('statKlaim').textContent  = laporanSaya.filter((l) => l.status === 'diklaim').length;
+    document.getElementById('statTotal').textContent  = laporanSaya.length;
+
+    // ===== 4. Render daftar laporan =====
+    const warnaStatus = {
+      hilang:    'bg-red-100 text-red-700',
+      ditemukan: 'bg-green-100 text-green-700',
+      diklaim:   'bg-gray-200 text-gray-600',
+    };
+
+    document.getElementById('listLaporan').innerHTML = laporanSaya.map((l) => `
+      <div class="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+        <div>
+          <span class="text-xs px-2 py-1 rounded ${warnaStatus[l.status] || 'bg-gray-100'}">${l.status.toUpperCase()}</span>
+          <p class="font-semibold mt-1">${l.nama}</p>
+          <p class="text-sm text-gray-500">📍 ${l.lokasi} · 📅 ${l.tanggal}</p>
+        </div>
+        <a href="detail.html?id=${l.id}" class="text-blue-600 text-sm hover:underline">Detail →</a>
+      </div>
+    `).join('');
+
+    // ===== Tampilkan tombol Admin kalau role-nya admin =====
+    if (user.role === 'admin') {
+      document.getElementById('tombolAdmin').classList.remove('hidden');
+    }
+
+    // ===== 5. Logout =====
+    document.getElementById('tombolLogout').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'home.html';
+    });
+  </script>
+</body>
+</html>
